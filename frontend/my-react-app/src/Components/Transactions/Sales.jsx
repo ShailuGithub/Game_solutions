@@ -202,7 +202,7 @@ const Sales = () => {
     { headerName: "Check In", field: "checkIn" },
     { headerName: "Check Out", field: "checkOut" },
     { headerName: "Quantity", field: "quantity" },
-    { headerName: "Rate", field: "rate" },
+    { headerName: "Rate", field: "Rate" },
     { headerName: "Amount", field: "amount" },
   ];
   const gridOptions = {
@@ -419,7 +419,10 @@ const Sales = () => {
                         onKeyDown={handleKeyDown}
                       />
                     </div>
-                    <div>
+                    <div
+                      className="ag-theme-alpine custom-ag-grid"
+                      style={{ height: "300px", width: "100%" }}
+                    >
                       <AgGridReact
                         key={gridData.length} // React will re-render the grid when gridData changes
                         rowData={gridData}

@@ -220,6 +220,41 @@ const Sales = () => {
       }
     },
   };
+  const handleTempSubmit = async (e) => {
+    e.preventDefault(); // Prevent form default submission
+
+    // Validate that required fields are filled
+    if (!selectedCustomer || !gridData.length) {
+      toast.error("Please select a customer and add at least one product!");
+      return;
+    }
+
+    const payload = {
+      customerId: selectedCustomer,
+      email: formData.Email,
+      contactNo: formData.ContactNo,
+      products: gridData, // Sending the gridData array as products
+    };
+
+    console.log("Payload:", payload);
+
+    try {
+      const response = await axiosinstance.post("sales", payload);
+
+      if (response.status === 200 && response.data.Valid) {
+        toast.success("Sales entry created successfully!");
+        // Clear form data and grid after successful submission
+        setFormData({ Email: "", ContactNo: "" });
+        setGridData([]);
+        setSelectedCustomer("");
+      } else {
+        toast.error(response.data.Message || "Failed to create sales entry");
+      }
+    } catch (error) {
+      console.error("Error creating sales entry:", error);
+      toast.error("Failed to create sales entry");
+    }
+  };
 
   return (
     <div className="container">
@@ -438,6 +473,7 @@ const Sales = () => {
                       type="submit"
                       className="btn btn-outline-success"
                       style={{ marginRight: "10px" }}
+                      onSubmit={handleTempSubmit}
                     >
                       Submit
                     </button>

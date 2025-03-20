@@ -230,6 +230,7 @@ const Sales = () => {
     }
 
     const payload = {
+      User_Id: sessionStorage.getItem("UserId"),
       customerId: selectedCustomer,
       email: formData.Email,
       contactNo: formData.ContactNo,
@@ -239,7 +240,7 @@ const Sales = () => {
     console.log("Payload:", payload);
 
     try {
-      const response = await axiosinstance.post("sales", payload);
+      const response = await axiosinstance.post("sales/saleinsert", payload);
 
       if (response.status === 200 && response.data.Valid) {
         toast.success("Sales entry created successfully!");
@@ -473,7 +474,7 @@ const Sales = () => {
                       type="submit"
                       className="btn btn-outline-success"
                       style={{ marginRight: "10px" }}
-                      onSubmit={handleTempSubmit}
+                      onClick={handleTempSubmit}
                     >
                       Submit
                     </button>

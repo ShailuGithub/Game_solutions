@@ -53,3 +53,31 @@ CREATE TABLE `tb_se_item` (
   `CheckOut` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `tb_se_main` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `Tran_Date` datetime DEFAULT NULL,
+  `Tran_No` varchar(45) DEFAULT NULL,
+  `Customer_Id` double DEFAULT NULL,
+  `Net_Amount` double DEFAULT NULL,
+  `User_id` int DEFAULT NULL,
+  `Entry_Date` datetime DEFAULT NULL,
+  `Cash` double DEFAULT NULL,
+  `Upi` double DEFAULT NULL,
+  `Credit` double DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `tb_se_main_wait` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `Tran_Date` datetime DEFAULT NULL,
+  `Tran_No` varchar(45) DEFAULT NULL,
+  `Customer_Id` double DEFAULT NULL,
+  `Net_Amount` double DEFAULT NULL,
+  `User_id` int DEFAULT NULL,
+  `Entry_Date` datetime DEFAULT NULL,
+  `Cash` double DEFAULT NULL,
+  `Upi` double DEFAULT NULL,
+  `Credit` double DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

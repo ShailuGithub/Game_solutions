@@ -52,17 +52,51 @@ const Sales = () => {
       console.error("Error fetching client data:", error);
     }
   };
-  const handleCustomerChange = (e) => {
+  const handleCustomerChange = async (e) => {
     const custid = e.target.value;
-    setSelectedCustomer(e.target.value);
+    setSelectedCustomer(custid);
+  
     const selectedClient = clients.find(
       (client) => client.Customer_Id.toString() === custid
     );
+  
     if (selectedClient) {
-      setFormData({
-        Email: selectedClient.Email,
-        ContactNo: selectedClient.ContactNo,
-      });
+      try { 
+        
+        // Make a POST request and send the Customer_Id in the body
+        const response = await axiosinstance.post("client/getCustomerBalance", {
+          Customer_Id: selectedClient.Customer_Id
+        });
+        
+  
+        if (response.status === 200 && response.data.Valid) {
+          // Assuming 'credit' is returned inside the 'data' object in the response
+          const credit = response.data.data[0]?.credit; // Access the 'credit' value from the response
+  
+          // You can now use this 'credit' value as needed
+          console.log("Fetched credit:", credit);
+          const finalCredit = (credit !== null && credit !== undefined && credit !== "") 
+          ? credit 
+          : 0; 
+          // You can update the formData or handle the credit value in any other way
+          setFormData({
+            Email: selectedClient.Email,
+            ContactNo: selectedClient.ContactNo,
+            Balance: finalCredit,  
+          });
+        } else {
+          console.error("Failed to fetch customer balance:", response.data.message);
+        }
+      } catch (error) { 
+        console.error("Error fetching customer balance:", error);
+   
+        if (error.response) { 
+          console.error("Response error:", error.response.data);  
+          console.error("Request error:", error.request);
+        } else { 
+          console.error("Error message:", error.message);
+        }
+      }
     }
   };
 
@@ -365,8 +399,12 @@ const Sales = () => {
                       <input
                         type="text"
                         className="form-control"
-                        value="0.00"
-                        disabled
+                        name="ContactNo"
+                        placeholder="Contact No"
+                        value={formData.Balance}
+                        onChange={handleChange}
+                        required
+                        readOnly
                       />
                     </div>
                     <div className="col-md-1">

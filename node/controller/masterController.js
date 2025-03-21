@@ -68,6 +68,49 @@ const getCustomer = async (req, res) => {
   }
 };
 
+const GetCustomerBalance = async (req, res) => {
+  try {
+    console.log("GetCustomerBalance");
+    // Extract Customer_Id from the request body
+    const { Customer_Id } = req.body;
+
+    // Check if Customer_Id is provided
+    if (!Customer_Id) {
+      return res.status(400).json({
+        Valid: false,
+        message: "Customer_Id is required",
+      });
+    }
+
+    // Fetch the balance for the specified Customer_Id from the database
+    const [rows] = await pool.query(
+      "SELECT (sum(Credit)+sum(Net_Amount))-sum(Net_Amount)-(select sum(Amount) from tb_receipt where Customer_Id=tb_se_main.Customer_Id)  as credit FROM tb_se_main WHERE Customer_Id = ?",
+      [Customer_Id] // Use parameterized query to prevent SQL injection
+    );
+
+    if (rows.length > 0) {
+      console.log("Customer balance fetched successfully");
+      return res.json({
+        Valid: true,
+        data: rows,
+      });
+    } else {
+      console.log("No data found for the provided Customer_Id");
+      return res.status(404).json({
+        Valid: false,
+        message: "No data found for the provided Customer_Id",
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res.status(500).json({
+      Valid: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+
 const ClientUpdate = async (req, res) => {
   // Validate mandatory fields
   if (
@@ -114,4 +157,4 @@ const ClientUpdate = async (req, res) => {
     });
   }
 };
-export default { Clientinsert, getCustomer, ClientUpdate };
+export default { Clientinsert, getCustomer, ClientUpdate,GetCustomerBalance };

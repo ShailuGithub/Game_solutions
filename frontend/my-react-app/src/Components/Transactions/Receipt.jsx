@@ -1,16 +1,80 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axiosinstance from "../../utils/axiosinstance";
 import { ToastContainer, toast } from "react-toastify";
 import NavBar from "../NavBar";
 
 const Receipt = () => {
-  const [FormData, setFormData] = useState({
-    Name: "",
-    Address: "",
-    ContactNo: "",
+  const [formData, setFormData] = useState({
     Email: "",
-    UserId: "", // remove this from input
+    ContactNo: "",
   });
+  const [clients, setClients] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState("");
+
+  const fetchClients = async () => {
+    try {
+      const response = await axiosinstance.get("client");
+      if (response.status === 200 && response.data.Valid) {
+        setClients(response.data.data);
+        console.log(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching client data:", error);
+    }
+  };
+
+  const handleCustomerChange = async (e) => {
+    const custid = e.target.value;
+    setSelectedCustomer(custid);
+  
+    const selectedClient = clients.find(
+      (client) => client.Customer_Id.toString() === custid
+    );
+  
+    if (selectedClient) {
+      try { 
+        
+        // Make a POST request and send the Customer_Id in the body
+        const response = await axiosinstance.post("client/getCustomerBalance", {
+          Customer_Id: selectedClient.Customer_Id
+        });
+        
+  
+        if (response.status === 200 && response.data.Valid) {
+          // Assuming 'credit' is returned inside the 'data' object in the response
+          const credit = response.data.data[0]?.credit; // Access the 'credit' value from the response
+  
+          // You can now use this 'credit' value as needed
+          console.log("Fetched credit:", credit);
+          const finalCredit = (credit !== null && credit !== undefined && credit !== "") 
+          ? credit 
+          : 0; 
+          // You can update the formData or handle the credit value in any other way
+          setFormData({
+            Email: selectedClient.Email,
+            ContactNo: selectedClient.ContactNo,
+            Balance: finalCredit,  
+          });
+        } else {
+          console.error("Failed to fetch customer balance:", response.data.message);
+        }
+      } catch (error) { 
+        console.error("Error fetching customer balance:", error);
+   
+        if (error.response) { 
+          console.error("Response error:", error.response.data);  
+          console.error("Request error:", error.request);
+        } else { 
+          console.error("Error message:", error.message);
+        }
+      }
+    }
+  };
+  
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
 
   const handleChange = (e) => {
     setFormData((prevData) => ({
@@ -83,10 +147,21 @@ const Receipt = () => {
                       <label htmlFor="inputState" className="form-label">
                         Customer
                       </label>
-                      <select id="inputState" className="form-select" required>
-                        <option value="0">Select</option>
-                        <option value="1">ABC</option>
-                        <option value="2">XYZ</option>
+                      <select
+                        id="inputState"
+                        className="form-select"
+                        value={selectedCustomer}
+                        onChange={handleCustomerChange}
+                      >
+                        <option value="">Select</option>
+                        {clients.map((client) => (
+                          <option
+                            key={client.Customer_Id}
+                            value={client.Customer_Id}
+                          >
+                            {client.Name}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -95,10 +170,13 @@ const Receipt = () => {
                         Email
                       </label>
                       <input
-                        type="text"
+                        type="email"
                         className="form-control"
-                        value="shailu580@gmail.com"
-                        disabled
+                        name="Email"
+                        placeholder="Email"
+                        value={formData.Email}
+                        onChange={handleChange}
+                        readOnly
                       />
                     </div>
 
@@ -109,8 +187,12 @@ const Receipt = () => {
                       <input
                         type="text"
                         className="form-control"
-                        value="9060837081"
-                        disabled
+                        name="ContactNo"
+                        placeholder="Contact No"
+                        value={formData.ContactNo}
+                        onChange={handleChange}
+                        required
+                        readOnly
                       />
                     </div>
 
@@ -121,8 +203,12 @@ const Receipt = () => {
                       <input
                         type="text"
                         className="form-control"
-                        value="0.00"
-                        disabled
+                        name="ContactNo"
+                        placeholder="Contact No"
+                        value={formData.Balance}
+                        onChange={handleChange}
+                        required
+                        readOnly
                       />
                     </div>
 
@@ -130,7 +216,7 @@ const Receipt = () => {
                       <label htmlFor="inputState" className="form-label">
                         Amount
                       </label>
-                      <input type="number" className="form-control" required />
+                      <input type="text" className="form-control" required />
                     </div>
                   </div>
 

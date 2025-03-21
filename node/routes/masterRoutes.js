@@ -4,4 +4,5 @@ import masterController from "../controller/masterController.js";
 router.post("/master", masterController.Clientinsert);
 router.get("/", masterController.getCustomer);
 router.put("/updatemaster", masterController.ClientUpdate);
+router.post("/getCustomerBalance", masterController.GetCustomerBalance);
 export default router;

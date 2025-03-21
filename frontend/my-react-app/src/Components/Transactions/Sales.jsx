@@ -3,6 +3,7 @@ import axiosinstance from "../../utils/axiosinstance";
 import { ToastContainer, toast } from "react-toastify";
 import NavBar from "../NavBar";
 import { AgGridReact } from "ag-grid-react";
+import { useNavigate } from "react-router-dom";
 import {
   ClientSideRowModelModule,
   ModuleRegistry,
@@ -10,6 +11,7 @@ import {
   ValidationModule,
   createGrid,
 } from "ag-grid-community";
+import ViewSales from "./ViewSales";
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -17,10 +19,13 @@ ModuleRegistry.registerModules([
   ValidationModule /* Development Only */,
 ]);
 const Sales = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     Email: "",
     ContactNo: "",
   });
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+
   const [productForm, setProductForm] = useState({
     product: "",
     checkIn: "",
@@ -109,7 +114,12 @@ const Sales = () => {
   };
 
   const handleSubmit = () => {};
+
   useEffect(() => {
+    const userId = sessionStorage.getItem("UserId");
+    if (!userId) {
+      navigate("/"); // Redirect to login if UserId is not found
+    }
     fetchClients();
     fetchProduct();
   }, []);
@@ -198,12 +208,12 @@ const Sales = () => {
   }, [gridData]);
 
   const columnDefs = [
-    { headerName: "Product", field: "product" },
-    { headerName: "Check In", field: "checkIn" },
-    { headerName: "Check Out", field: "checkOut" },
-    { headerName: "Quantity", field: "quantity" },
-    { headerName: "Rate", field: "Rate" },
-    { headerName: "Amount", field: "amount" },
+    { headerName: "Product", field: "product", width: 200 },
+    { headerName: "Check In", field: "checkIn", width: 120 },
+    { headerName: "Check Out", field: "checkOut", width: 120 },
+    { headerName: "Quantity", field: "quantity", width: 120 },
+    { headerName: "Rate", field: "Rate", width: 120 },
+    { headerName: "Amount", field: "amount", width: 120 },
   ];
   const gridOptions = {
     onGridReady: (params) => {
@@ -261,25 +271,42 @@ const Sales = () => {
     <div className="container">
       <NavBar />
       <main id="main" className="main">
-        <div className="pagetitle">
-          <h1>Sales</h1>
-          <nav>
-            <ol className="breadcrumb">
-              <li className="breadcrumb-item">
-                <a href="#">Transactions</a>
-              </li>
-              <li className="breadcrumb-item active">Sales</li>
-            </ol>
-          </nav>
+        <div className="row pagetitle">
+          <div className="col-md-3">
+            <h1>Sales</h1>
+            <nav>
+              <ol className="breadcrumb">
+                <li class="breadcrumb-item">
+                  <a href="#">
+                    <i class="bi bi-house-door"></i>
+                  </a>
+                </li>
+                <li className="breadcrumb-item active">Transactions</li>
+                <li className="breadcrumb-item active">Sales</li>
+              </ol>
+            </nav>
+          </div>
+          <div className="col-md-9 d-flex justify-content-end">
+            <button type="reset" className="btn btn-outline-primary">
+              Sales List
+            </button>
+          </div>
         </div>
+        {/* <div className="row pagetitle">
+        <div className="col-md-9 d-flex justify-content-end">
+            <button type="reset" className="btn btn-outline-primary">
+              Sales List
+            </button>
+          </div>
+          </div> */}
 
         <section className="section">
           <div className="row">
             <div className="card">
               <div className="card-body">
-                <h5 className="card-title">Sales Entry</h5>
+                {/* <h5 className="card-title">Sales Entry</h5> */}
 
-                <form className="row g-3" onSubmit={handleSubmit}>
+                <form className="row g-3 mt-3" onSubmit={handleSubmit}>
                   <div className="row mb-3">
                     <div className="col-md-3">
                       <label htmlFor="inputState" className="form-label">
@@ -363,9 +390,19 @@ const Sales = () => {
                         className="form-label"
                       ></label>
                       <div>
-                        <button type="button" className="btn btn-outline-info">
+                        <button
+                          type="button"
+                          className="btn btn-outline-info"
+                          onClick={() => setModalIsOpen(true)}
+                        >
                           View
                         </button>
+                        {modalIsOpen && (
+                          <ViewSales
+                            isOpen={modalIsOpen}
+                            onClose={() => setModalIsOpen(false)}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -455,6 +492,8 @@ const Sales = () => {
                         onKeyDown={handleKeyDown}
                       />
                     </div>
+                  </div>
+                  <div className="row mb-3">
                     <div
                       className="ag-theme-alpine custom-ag-grid"
                       style={{ height: "300px", width: "100%" }}
@@ -463,7 +502,7 @@ const Sales = () => {
                         key={gridData.length} // React will re-render the grid when gridData changes
                         rowData={gridData}
                         columnDefs={columnDefs}
-                        // gridOptions={gridOptions}
+                        gridOptions={gridOptions}
                         // onRowDoubleClicked={handleRowClick}
                       />
                     </div>

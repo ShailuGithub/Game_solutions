@@ -1,6 +1,6 @@
 import { pool } from "../connection.js";
 
-const SalesInsert = async (req, res) => {
+export const SalesInsert = async (req, res) => {
   const { customerId, email, contactNo, User_Id, products } = req.body;
 
   if (!customerId || !products || products.length === 0) {
@@ -61,4 +61,17 @@ const SalesInsert = async (req, res) => {
     });
   }
 };
-export default SalesInsert;
+export const viewSales = async (req, res) => {
+  try {
+    const [rows] = await pool.execute(
+      `SELECT a.id, a.Tran_No, a.Tran_Date, b.Name, b.ContactNo, a.Net_Amount 
+       FROM tb_se_main_wait a 
+       JOIN client_master b ON a.Customer_Id = b.Customer_Id`
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching sales data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+// export default { viewSales, SalesInsert };

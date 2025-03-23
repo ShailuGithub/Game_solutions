@@ -11,7 +11,7 @@ import {
 import axiosinstance from "../../utils/axiosinstance";
 // Modal.setAppElement("#root");
 
-const ViewSales = ({ isOpen, onClose }) => {
+const ViewSales = ({ isOpen, onClose, onSelectTransaction }) => {
   const [rowData, setRowData] = useState([]);
 
   useEffect(() => {
@@ -28,6 +28,10 @@ const ViewSales = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  const onRowClicked = (event) => {
+    onSelectTransaction(event.data.id);
+    onClose(); // Close modal after selection
+  };
   const columnDefs = [
     { headerName: "ID", field: "id", width: 80 },
     { headerName: "Transaction No", field: "Tran_No", width: 200 },
@@ -68,6 +72,7 @@ const ViewSales = ({ isOpen, onClose }) => {
           rowData={rowData}
           columnDefs={columnDefs}
           pagination={true}
+          onRowClicked={onRowClicked}
         />
       </div>
     </Modal>

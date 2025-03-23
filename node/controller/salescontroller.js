@@ -74,4 +74,25 @@ export const viewSales = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const getSalesDetails = async (req, res) => {
+  const { id } = req.params; // Get selected transaction ID
+  try {
+    const [rows] = await pool.execute(
+      `SELECT a.id,a.Tran_No,a.Tran_Date,a.Customer_Id,b.Name,b.ContactNo,b.Email,a.Net_Amount,
+              c.Item_Id,d.Name as ProductName,c.CheckIn,c.CheckOut,c.Quantity,c.Rate,c.Amount
+       FROM tb_se_main_wait a
+       JOIN client_master b ON a.Customer_Id = b.Customer_Id
+       JOIN tb_se_item_wait c ON a.id = c.Main_Id
+       JOIN product_master d ON c.Item_Id = d.Item_id
+       WHERE a.id = ?`,
+      [id]
+    );
+    console.log(rows);
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching sales details:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 // export default { viewSales, SalesInsert };

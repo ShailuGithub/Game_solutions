@@ -25,6 +25,7 @@ const Sales = () => {
     ContactNo: "",
   });
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const [productForm, setProductForm] = useState({
     product: "",
@@ -55,45 +56,47 @@ const Sales = () => {
   const handleCustomerChange = async (e) => {
     const custid = e.target.value;
     setSelectedCustomer(custid);
-  
+
     const selectedClient = clients.find(
       (client) => client.Customer_Id.toString() === custid
     );
-  
+
     if (selectedClient) {
-      try { 
-        
+      try {
         // Make a POST request and send the Customer_Id in the body
         const response = await axiosinstance.post("client/getCustomerBalance", {
-          Customer_Id: selectedClient.Customer_Id
+          Customer_Id: selectedClient.Customer_Id,
         });
-        
-  
+
         if (response.status === 200 && response.data.Valid) {
           // Assuming 'credit' is returned inside the 'data' object in the response
           const credit = response.data.data[0]?.credit; // Access the 'credit' value from the response
-  
+
           // You can now use this 'credit' value as needed
           console.log("Fetched credit:", credit);
-          const finalCredit = (credit !== null && credit !== undefined && credit !== "") 
-          ? credit 
-          : 0; 
+          const finalCredit =
+            credit !== null && credit !== undefined && credit !== ""
+              ? credit
+              : 0;
           // You can update the formData or handle the credit value in any other way
           setFormData({
             Email: selectedClient.Email,
             ContactNo: selectedClient.ContactNo,
-            Balance: finalCredit,  
+            Balance: finalCredit,
           });
         } else {
-          console.error("Failed to fetch customer balance:", response.data.message);
+          console.error(
+            "Failed to fetch customer balance:",
+            response.data.message
+          );
         }
-      } catch (error) { 
+      } catch (error) {
         console.error("Error fetching customer balance:", error);
-   
-        if (error.response) { 
-          console.error("Response error:", error.response.data);  
+
+        if (error.response) {
+          console.error("Response error:", error.response.data);
           console.error("Request error:", error.request);
-        } else { 
+        } else {
           console.error("Error message:", error.message);
         }
       }
@@ -195,19 +198,6 @@ const Sales = () => {
         return;
       }
       console.log(products);
-      // Add new row to grid
-      // setProducts((prev) => [
-      //   ...prev,
-      //   {
-      //     id: crypto.randomUUID(),
-      //     product,
-      //     checkIn,
-      //     checkOut,
-      //     quantity,
-      //     Rate,
-      //     amount,
-      //   },
-      // ]);
       setGridData((prev) => [
         ...prev,
         {
@@ -299,6 +289,16 @@ const Sales = () => {
       console.error("Error creating sales entry:", error);
       toast.error("Failed to create sales entry");
     }
+  };
+  const handleTransactionSelect = (id) => {
+    axiosinstance
+      .get(`sales/getSalesDetails/${id}`)
+      .then((response) => {
+        setGridData(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching sales details:", error);
+      });
   };
 
   return (
@@ -439,6 +439,7 @@ const Sales = () => {
                           <ViewSales
                             isOpen={modalIsOpen}
                             onClose={() => setModalIsOpen(false)}
+                            onSelectTransaction={handleTransactionSelect}
                           />
                         )}
                       </div>

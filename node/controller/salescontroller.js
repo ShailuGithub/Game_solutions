@@ -80,7 +80,7 @@ export const getSalesDetails = async (req, res) => {
   try {
     const [rows] = await pool.execute(
       `SELECT a.id,a.Tran_No,a.Tran_Date,a.Customer_Id,b.Name,b.ContactNo,b.Email,a.Net_Amount,
-              c.Item_Id,d.Name as ProductName,c.CheckIn,c.CheckOut,c.Quantity,c.Rate,c.Amount
+              c.Item_Id,d.Name as product,c.CheckIn as checkIn,c.CheckOut as checkOut,c.Quantity as quantity,c.Rate,c.Amount as amount
        FROM tb_se_main_wait a
        JOIN client_master b ON a.Customer_Id = b.Customer_Id
        JOIN tb_se_item_wait c ON a.id = c.Main_Id

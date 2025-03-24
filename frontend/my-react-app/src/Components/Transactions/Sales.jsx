@@ -3,7 +3,7 @@ import axiosinstance from "../../utils/axiosinstance";
 import { ToastContainer, toast } from "react-toastify";
 import NavBar from "../NavBar";
 import { AgGridReact } from "ag-grid-react";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 import {
   ClientSideRowModelModule,
   ModuleRegistry,
@@ -25,8 +25,6 @@ const Sales = () => {
     ContactNo: "",
   });
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
-
   const [productForm, setProductForm] = useState({
     product: "",
     checkIn: "",
@@ -38,10 +36,7 @@ const Sales = () => {
   const [clients, setClients] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [gridData, setGridData] = useState([]);
-
   const [products, setProducts] = useState([]);
-  // const [selectedProduct, setSelectedProduct] = useState("");
-
   const fetchClients = async () => {
     try {
       const response = await axiosinstance.get("client");
@@ -227,9 +222,6 @@ const Sales = () => {
       // setSelectedProduct(""); // Reset product dropdown
     }
   };
-  useEffect(() => {
-    console.log("Updated gridData:", gridData);
-  }, [gridData]);
 
   const columnDefs = [
     { headerName: "Product", field: "product", width: 200 },
@@ -295,6 +287,14 @@ const Sales = () => {
       .get(`sales/getSalesDetails/${id}`)
       .then((response) => {
         setGridData(response.data);
+        if (response.data.length > 0) {
+          const custdetail = {
+            Email: response.data[0].Email || "",
+            ContactNo: response.data[0].ContactNo || "",
+          };
+          setFormData(custdetail);
+          setSelectedCustomer(response.data[0].Customer_Id || "");
+        }
       })
       .catch((error) => {
         console.error("Error fetching sales details:", error);

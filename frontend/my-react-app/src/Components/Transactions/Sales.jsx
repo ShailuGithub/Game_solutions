@@ -300,6 +300,21 @@ const Sales = () => {
         console.error("Error fetching sales details:", error);
       });
   };
+  const handleRowClick = (event) => {
+    const rowData = event.data;
+    const selectedProduct = products.find((p) => p.Name === rowData.product);
+    console.log(rowData);
+    setProductForm({
+      product: selectedProduct ? selectedProduct.Item_Id : "",
+      checkIn: rowData.checkIn,
+      checkOut: rowData.checkOut,
+      quantity: rowData.quantity,
+      Rate: rowData.Rate,
+      amount: rowData.amount,
+    });
+    // setGridData((prevData) => prevData.filter((row) => row.id != rowData.id));
+    // console.log("Updated Grid Data:", gridData);
+  };
 
   return (
     <div className="container">
@@ -542,7 +557,7 @@ const Sales = () => {
                         rowData={gridData}
                         columnDefs={columnDefs}
                         gridOptions={gridOptions}
-                        // onRowDoubleClicked={handleRowClick}
+                        onRowDoubleClicked={handleRowClick}
                       />
                     </div>
                   </div>

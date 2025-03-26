@@ -369,6 +369,33 @@ const Sales = () => {
       toast.error("Failed to create sales entry");
     }
   };
+  useEffect(() => {
+    if (productForm.checkIn && productForm.checkOut) {
+      const newQuantity = calculateTimeDifference(
+        productForm.checkIn,
+        productForm.checkOut
+      );
+
+      setProductForm((prev) => ({
+        ...prev,
+        quantity: newQuantity,
+      }));
+    }
+  }, [productForm.checkIn, productForm.checkOut]);
+  const calculateTimeDifference = (checkIn, checkOut) => {
+    const [checkInHours, checkInMinutes] = checkIn.split(":").map(Number);
+    const [checkOutHours, checkOutMinutes] = checkOut.split(":").map(Number);
+
+    let checkInTime = checkInHours * 60 + checkInMinutes; // Convert to minutes
+    let checkOutTime = checkOutHours * 60 + checkOutMinutes;
+
+    if (checkOutTime < checkInTime) {
+      // Handle overnight case (e.g., Check-In: 23:30, Check-Out: 01:00)
+      checkOutTime += 24 * 60;
+    }
+
+    return checkOutTime - checkInTime; // Return difference in minutes
+  };
 
   return (
     <div className="container">

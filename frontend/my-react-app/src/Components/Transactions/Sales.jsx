@@ -33,6 +33,12 @@ const Sales = () => {
     Rate: 0,
     amount: 0,
   });
+  const [AmountForm, setAmountForm] = useState({
+    upi: 0,
+    cash: 0,
+    credit: 0,
+    NetAmount: 0,
+  });
   const [clients, setClients] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [gridData, setGridData] = useState([]);
@@ -303,7 +309,7 @@ const Sales = () => {
   const handleRowClick = (event) => {
     const rowData = event.data;
     const selectedProduct = products.find((p) => p.Name === rowData.product);
-    console.log(rowData);
+    console.log(rowData.Item_Id);
     setProductForm({
       product: selectedProduct ? selectedProduct.Item_Id : "",
       checkIn: rowData.checkIn,
@@ -314,6 +320,54 @@ const Sales = () => {
     });
     // setGridData((prevData) => prevData.filter((row) => row.id != rowData.id));
     // console.log("Updated Grid Data:", gridData);
+  };
+  const handleAmountChange = (e) => {
+    const { name, value } = e.target;
+    setAmountForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const handleMainSubmit = async (e) => {
+    e.preventDefault(); // Prevent form default submission
+
+    // Validate that required fields are filled
+    if (!selectedCustomer || !gridData.length) {
+      toast.error("Please select a customer and add at least one product!");
+      return;
+    }
+
+    const payload = {
+      User_Id: sessionStorage.getItem("UserId"),
+      customerId: selectedCustomer,
+      email: formData.Email,
+      contactNo: formData.ContactNo,
+      products: gridData, // Sending the gridData array as products
+      Amount: AmountForm,
+    };
+
+    console.log("Payload:", payload);
+
+    try {
+      const response = await axiosinstance.post(
+        "sales/salesinsertMain",
+        payload
+      );
+
+      if (response.status === 200 && response.data.Valid) {
+        toast.success("Sales entry created successfully!");
+        // Clear form data and grid after successful submission
+        setFormData({ Email: "", ContactNo: "" });
+        setGridData([]);
+        setSelectedCustomer("");
+        setAmountForm([]);
+      } else {
+        toast.error(response.data.Message || "Failed to create sales entry");
+      }
+    } catch (error) {
+      console.error("Error creating sales entry:", error);
+      toast.error("Failed to create sales entry");
+    }
   };
 
   return (
@@ -341,20 +395,10 @@ const Sales = () => {
             </button>
           </div>
         </div>
-        {/* <div className="row pagetitle">
-        <div className="col-md-9 d-flex justify-content-end">
-            <button type="reset" className="btn btn-outline-primary">
-              Sales List
-            </button>
-          </div>
-          </div> */}
-
         <section className="section">
           <div className="row">
             <div className="card">
               <div className="card-body">
-                {/* <h5 className="card-title">Sales Entry</h5> */}
-
                 <form className="row g-3 mt-3" onSubmit={handleSubmit}>
                   <div className="row mb-3">
                     <div className="col-md-3">
@@ -432,6 +476,7 @@ const Sales = () => {
                           type="button"
                           className="btn btn-outline-warning"
                           style={{ marginRight: "5px" }}
+                          onClick={handleTempSubmit}
                         >
                           Wait
                         </button>
@@ -561,13 +606,61 @@ const Sales = () => {
                       />
                     </div>
                   </div>
+                  <div className="col-2">
+                    <label htmlFor="inputNanme4" className="form-label">
+                      Cash
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="cash"
+                      value={AmountForm.cash}
+                      onChange={handleAmountChange}
+                    />
+                  </div>
+                  <div className="col-2">
+                    <label htmlFor="inputNanme4" className="form-label">
+                      UPI
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="upi"
+                      value={AmountForm.upi}
+                      onChange={handleAmountChange}
+                    />
+                  </div>
+                  <div className="col-2">
+                    <label htmlFor="inputNanme4" className="form-label">
+                      Credit
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="credit"
+                      value={AmountForm.credit}
+                      onChange={handleAmountChange}
+                    />
+                  </div>
+                  <div className="col-2">
+                    <label htmlFor="inputNanme4" className="form-label">
+                      Net Amount
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="NetAmount"
+                      value={AmountForm.NetAmount}
+                      onChange={handleAmountChange}
+                    />
+                  </div>
 
                   <div style={{ textAlign: "right" }}>
                     <button
                       type="submit"
                       className="btn btn-outline-success"
                       style={{ marginRight: "10px" }}
-                      onClick={handleTempSubmit}
+                      onClick={handleMainSubmit}
                     >
                       Submit
                     </button>

@@ -95,4 +95,87 @@ export const getSalesDetails = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const SalesInsertMain = async (req, res) => {
+  const { customerId, email, contactNo, User_Id, products, Amount } = req.body;
+
+  if (!customerId || !products || products.length === 0) {
+    return res.status(400).json({ error: "Invalid request data" });
+  }
+  const cash = parseFloat(Amount.cash) || 0;
+  const upi = parseFloat(Amount.upi) || 0;
+  const credit = parseFloat(Amount.credit) || 0;
+  // const netAmount = parseFloat(Amount.NetAmount) || 0;
+  // if (netAmount !== cash + upi + credit) {
+  //   return res
+  //     .status(400)
+  //     .json({ error: "Net Amount does not match sum of payment methods" });
+  // }
+  const netAmount = parseFloat(
+    products.reduce((sum, product) => sum + Number(product.amount), 0)
+  );
+
+  console.log(netAmount, products);
+
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [mainRes] = await connection.execute(
+      `INSERT INTO tb_se_main 
+      (Tran_Date, Tran_No, Customer_Id, Net_Amount, User_id, Entry_Date, Cash, Upi, Credit)
+      VALUES (NOW(), UUID(), ?, ?, ?, NOW(), ?, ?, ?)`,
+      [
+        customerId,
+        netAmount, // Net_Amount not proper
+        1,
+        cash,
+        upi,
+        credit,
+      ]
+    );
+    const mainId = mainRes.insertId;
+    for (const product of products) {
+      console.log(product.Item_Id);
+      await connection.execute(
+        `INSERT INTO tb_se_item 
+        (Main_Id, Item_Id, Quantity, Rate, Amount, CheckIn, CheckOut)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          mainId,
+          product.Item_Id,
+          product.quantity,
+          product.Rate,
+          product.amount,
+          product.checkIn,
+          product.checkOut,
+        ]
+      );
+    }
+    await connection.execute(`DELETE FROM tb_se_item_wait WHERE Main_Id = ?`, [
+      mainId,
+    ]);
+
+    await connection.execute(`DELETE FROM tb_se_main_wait WHERE Id = ?`, [
+      mainId,
+    ]);
+    console.log("deleted 2 tbs ");
+    await connection.commit();
+
+    res.status(200).json({
+      Valid: true,
+      message: "Data inserted successfully",
+      mainId,
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error("Error:", error);
+    res.status(500).json({
+      Valid: false,
+      error: "Internal Server Error",
+      details: error.message,
+    });
+  }
+};
 // export default { viewSales, SalesInsert };

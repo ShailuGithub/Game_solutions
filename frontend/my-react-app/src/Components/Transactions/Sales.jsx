@@ -168,29 +168,36 @@ const Sales = () => {
     }));
   };
 
-  const handleQuantityAndRateChange = (e) => {
-    const { name, value } = e.target;
+  // const handleQuantityAndRateChange = (e) => {
+  //   const { name, value } = e.target;
 
-    setProductForm((prev) => {
-      // Convert values to numbers htmlFor calculation
-      const quantity =
-        name === "quantity" ? Number(value) : Number(prev.quantity);
-      const rate = name === "Rate" ? Number(value) : Number(prev.Rate);
+  //   setProductForm((prev) => {
+  //     // Convert values to numbers htmlFor calculation
+  //     const quantity =
+  //       name === "quantity" ? Number(value) : Number(prev.quantity);
+  //     const rate = name === "Rate" ? Number(value) : Number(prev.Rate);
 
-      const updatedForm = {
-        ...prev,
-        [name]: value,
-        amount: !isNaN(quantity) && !isNaN(rate) ? quantity * rate : 0, // Calculate amount
-      };
+  //     const updatedForm = {
+  //       ...prev,
+  //       [name]: value,
+  //       amount: !isNaN(quantity) && !isNaN(rate) ? quantity * rate : 0, // Calculate amount
+  //     };
 
-      return updatedForm;
-    });
-  };
+  //     return updatedForm;
+  //   });
+  // };
+  useEffect(() => {
+    setProductForm((prev) => ({
+      ...prev,
+      amount: prev.quantity * prev.Rate || 0, // Ensures no NaN issues
+    }));
+  }, [productForm.quantity, productForm.Rate]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-
+      console.log("this is productForm", productForm);
+      console.log("Available products:", products);
       const { product, checkIn, checkOut, quantity, Rate, amount } =
         productForm;
 
@@ -198,12 +205,17 @@ const Sales = () => {
         alert("Please fill all product fields");
         return;
       }
-      console.log(products);
+      const selectedProduct = products.find(
+        (p) => Number(p.Item_Id) === Number(product)
+      );
+
+      console.log("selected pro", selectedProduct);
+
       setGridData((prev) => [
         ...prev,
         {
           id: crypto.randomUUID(),
-          product,
+          product: selectedProduct.Name,
           checkIn,
           checkOut,
           quantity,
@@ -211,10 +223,7 @@ const Sales = () => {
           amount,
         },
       ]);
-
       console.log(gridData);
-
-      // Clear product form after adding
       setProductForm((prev) => ({
         ...prev,
         product: "",
@@ -224,8 +233,6 @@ const Sales = () => {
         Rate: "",
         amount: "",
       }));
-
-      // setSelectedProduct(""); // Reset product dropdown
     }
   };
 
@@ -318,7 +325,9 @@ const Sales = () => {
       Rate: rowData.Rate,
       amount: rowData.amount,
     });
-    // setGridData((prevData) => prevData.filter((row) => row.id != rowData.id));
+    setGridData((prevData) =>
+      prevData.filter((row) => row.Item_Id != rowData.Item_Id)
+    );
     // console.log("Updated Grid Data:", gridData);
   };
   const handleAmountChange = (e) => {
@@ -393,7 +402,6 @@ const Sales = () => {
       // Handle overnight case (e.g., Check-In: 23:30, Check-Out: 01:00)
       checkOutTime += 24 * 60;
     }
-
     return checkOutTime - checkInTime; // Return difference in minutes
   };
 
@@ -590,7 +598,7 @@ const Sales = () => {
                         className="form-control"
                         name="quantity"
                         value={productForm.quantity}
-                        onChange={handleQuantityAndRateChange}
+                        // onChange={handleQuantityAndRateChange}
                       />
                     </div>
                     <div className="col-2">
@@ -602,7 +610,7 @@ const Sales = () => {
                         className="form-control"
                         name="Rate"
                         value={productForm.Rate}
-                        onChange={handleQuantityAndRateChange}
+                        // onChange={handleQuantityAndRateChange}
                       />
                     </div>
                     <div className="col-2">
@@ -625,7 +633,7 @@ const Sales = () => {
                       style={{ height: "300px", width: "100%" }}
                     >
                       <AgGridReact
-                        key={gridData.length} // React will re-render the grid when gridData changes
+                        key={gridData.length}
                         rowData={gridData}
                         columnDefs={columnDefs}
                         gridOptions={gridOptions}

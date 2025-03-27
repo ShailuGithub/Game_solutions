@@ -1,7 +1,7 @@
-import { pool } from "../connection.js";
-import { setUser } from "../auth.js";
-import crypto from "crypto";
-import sendMailer from "./sendmail.js";
+const { pool } = require("../connection.js");
+const { setUser } = require("../auth.js");
+const crypto = require("crypto");
+const sendMailer = require("./sendmail.js");
 
 function generateOtp() {
   return crypto.randomInt(1000, 10000).toString();
@@ -181,4 +181,4 @@ const resetpassword = async (req, res) => {
   }
 };
 
-export default { Login, getcode, Register, resetpassword };
+module.exports = { Login, getcode, Register, resetpassword };

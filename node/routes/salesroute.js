@@ -1,13 +1,15 @@
-import express from "express";
+const express = require("express");
 const router = express.Router();
-import {
+const {
   SalesInsert,
   viewSales,
   getSalesDetails,
   SalesInsertMain,
-} from "../controller/salescontroller.js";
+} = require("../controller/salescontroller.js");
+
 router.post("/saleinsert", SalesInsert);
 router.get("/getViewSales", viewSales);
 router.get("/getSalesDetails/:id", getSalesDetails);
 router.post("/salesinsertMain", SalesInsertMain);
-export default router;
+
+module.exports = router;

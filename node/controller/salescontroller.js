@@ -1,6 +1,6 @@
-import { pool } from "../connection.js";
+const pool = require("../connection.js").pool;
 
-export const SalesInsert = async (req, res) => {
+const SalesInsert = async (req, res) => {
   const { customerId, email, contactNo, User_Id, products } = req.body;
 
   if (!customerId || !products || products.length === 0) {
@@ -61,9 +61,9 @@ export const SalesInsert = async (req, res) => {
     });
   }
 };
-export const viewSales = async (req, res) => {
+const viewSales = async (req, res) => {
   try {
-    const [rows] = await pool.execute(
+    const [rows] = await pool.query(
       `SELECT a.id, a.Tran_No, a.Tran_Date, b.Name, b.ContactNo, a.Net_Amount 
        FROM tb_se_main_wait a 
        JOIN client_master b ON a.Customer_Id = b.Customer_Id`
@@ -75,7 +75,7 @@ export const viewSales = async (req, res) => {
   }
 };
 
-export const getSalesDetails = async (req, res) => {
+const getSalesDetails = async (req, res) => {
   const { id } = req.params; // Get selected transaction ID
   try {
     const [rows] = await pool.execute(
@@ -96,7 +96,7 @@ export const getSalesDetails = async (req, res) => {
   }
 };
 
-export const SalesInsertMain = async (req, res) => {
+const SalesInsertMain = async (req, res) => {
   const { customerId, email, contactNo, User_Id, products, Amount } = req.body;
 
   if (!customerId || !products || products.length === 0) {
@@ -178,4 +178,9 @@ export const SalesInsertMain = async (req, res) => {
     });
   }
 };
-// export default { viewSales, SalesInsert };
+module.exports = {
+  SalesInsert,
+  viewSales,
+  getSalesDetails,
+  SalesInsertMain,
+};

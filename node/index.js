@@ -1,12 +1,11 @@
-import express from "express";
-import { checkconnection } from "./connection.js";
-import cors from "cors";
+const express = require("express");
+const { checkconnection } = require("./connection.js");
+const cors = require("cors");
 const app = express();
-import routes from "./routes/routes.js";
-import masterroute from "./routes/masterRoutes.js";
-import productmasterroute from "./routes/ProductmasterRoutes.js";
-import salesroute from "./routes/salesroute.js";
-
+const routes = require("./routes/routes.js");
+const masterroute = require("./routes/masterRoutes.js");
+const productmasterroute = require("./routes/ProductmasterRoutes.js");
+const salesroute = require("./routes/salesroute.js");
 app.use(express.json()); //middleware
 
 app.use(cors());

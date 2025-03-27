@@ -1,8 +1,10 @@
-import express from "express"; //keeping the master routes together
+const express = require("express"); // Keeping the master routes together
 const router = express.Router();
-import masterController from "../controller/masterController.js";
+const masterController = require("../controller/masterController.js");
+
 router.post("/master", masterController.Clientinsert);
 router.get("/", masterController.getCustomer);
 router.put("/updatemaster", masterController.ClientUpdate);
 router.post("/getCustomerBalance", masterController.GetCustomerBalance);
-export default router;
+
+module.exports = router;

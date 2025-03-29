@@ -84,8 +84,8 @@ const GetCustomerBalance = async (req, res) => {
 
     // Fetch the balance for the specified Customer_Id from the database
     const [rows] = await pool.query(
-      "SELECT (sum(Credit)+sum(Net_Amount))-sum(Net_Amount)-(select sum(Amount) from tb_receipt where Customer_Id=tb_se_main.Customer_Id)  as credit FROM tb_se_main WHERE Customer_Id = ?",
-      [Customer_Id] // Use parameterized query to prevent SQL injection
+      "SELECT     (IFNULL(SUM(Credit), 0) + IFNULL(SUM(Net_Amount), 0)) -     IFNULL(SUM(Net_Amount), 0) -     (SELECT IFNULL(SUM(Amount), 0)      FROM tb_receipt      WHERE Customer_Id = ?) AS credit FROM tb_se_main WHERE Customer_Id = ?",
+      [Customer_Id,Customer_Id] // Use parameterized query to prevent SQL injection
     );
 
     if (rows.length > 0) {

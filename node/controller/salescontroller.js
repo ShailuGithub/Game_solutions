@@ -178,9 +178,69 @@ const SalesInsertMain = async (req, res) => {
     });
   }
 };
+
+const ReceiptInsert = async (req, res) => { 
+  
+  if (!req.body || !req.body.customerId || !req.body.Amount || !req.body.User_Id) {
+    return res.status(400).json({
+      Valid: false,
+      message: "Please enter the mandatory fields",
+    });
+  }
+  console.log(req.body );
+  // Extract fields from request body
+  const { customerId, Balance, Amount, User_Id } = req.body;
+  
+  try {
+    // Insert client data into database
+    const [result] = await pool.query(
+      `INSERT INTO tb_receipt (customer_Id, Balance, Amount, UserId , Entry_Date) 
+       VALUES (?, ?, ?, ?, NOW())`,
+      [customerId, Balance, Amount.Amount,User_Id]
+    );
+    if (result.affectedRows > 0) {
+      console.log("Receipt insertion successful");
+      return res.json({
+        Valid: true,
+        message: "Receipt insertion successful",
+      });
+    } else {
+      console.log("Receipt insertion failed");
+      return res.status(400).json({
+        Valid: false,
+        message: "Receipt insertion failed",
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res.status(500).json({
+      Valid: false,
+      message: "Internal Server Error",
+    });
+  }
+}
+
+const getReceiptDetails = async (req, res) => {
+  console.log(req);
+  const { id } = req.params; // Get selected transaction ID
+  try {
+    const [rows] = await pool.execute(
+      `SELECT b.Name,b.ContactNo,a.Amount,a.Entry_date,a.Balance FROM node.tb_receipt a,client_master b where a.Customer_Id=b.Customer_Id and a.customer_id=? order by a.entry_date desc;`,
+      [id]
+    );
+    console.log(rows);
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching Receipt details:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   SalesInsert,
   viewSales,
   getSalesDetails,
   SalesInsertMain,
+  ReceiptInsert,
+  getReceiptDetails
 };

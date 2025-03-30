@@ -6,6 +6,7 @@ import ProductMaster from "./Components/Masters/ProductMaster";
 import Sales from "./Components/Transactions/Sales";
 import Dashboard from "./Components/Dashboard";
 import Receipt from "./Components/Transactions/Receipt";
+import SalesRegister from "./Components/Reports/SalesRegister";
 function App() {
   return (
     <BrowserRouter>
@@ -17,6 +18,7 @@ function App() {
         <Route path="/Dashboard" element={<Dashboard />} />
         <Route path="/Sales" element={<Sales />} />
         <Route path="/Receipt" element={<Receipt />} />
+        <Route path="/SalesRegister" element={<SalesRegister />} />
       </Routes>
     </BrowserRouter>
   );

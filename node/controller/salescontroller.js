@@ -236,11 +236,49 @@ const getReceiptDetails = async (req, res) => {
   }
 };
 
+const GetSalesRegister = async (req, res) => {  
+  console.log(req);
+
+  const { id } = req.params; // Get selected transaction ID
+  const { fromdate, todate } = req.query; // Extract fromdate and todate from query parameters
+
+  // Validate if fromdate and todate are provided
+  if (!fromdate || !todate) {
+    return res.status(400).json({ error: "Both fromdate and todate are required" });
+  }
+
+  try {
+    // SQL query will vary based on whether Customer_Id is provided or not
+    let query = `SELECT a.Tran_Date, a.Tran_No, b.Name, b.ContactNo, a.Net_Amount, a.Cash, a.Upi, a.Credit 
+                 FROM tb_se_main a
+                 JOIN client_master b ON a.Customer_Id = b.Customer_Id
+                 WHERE a.Tran_Date BETWEEN ? AND ?`;
+
+    // If id (Customer_Id) is provided, add the condition to filter by Customer_Id
+    let queryParams = [fromdate, todate];
+    if (id && id !== "0") {
+      query += ` AND a.Customer_Id = ?`;
+      queryParams.push(id); // Add the id to the query parameters
+    }
+
+    const [rows] = await pool.execute(query, queryParams);
+    
+    console.log(rows);
+    res.json(rows); // Send the results as the response
+  } catch (error) {
+    console.error("Error fetching Sales Register details:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+
 module.exports = {
   SalesInsert,
   viewSales,
   getSalesDetails,
   SalesInsertMain,
   ReceiptInsert,
-  getReceiptDetails
+  getReceiptDetails,
+  GetSalesRegister
 };

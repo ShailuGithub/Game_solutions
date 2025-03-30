@@ -43,6 +43,9 @@ const NavBar = () => {
   const handleReceipt = () => {
     navigate("/Receipt", { replace: true });
   };
+  const handleSalesRegister = () => {
+    navigate("/SalesRegister", { replace: true });
+  };
   const handleSignOut = () => {
     navigate("/", { replace: true });
   };
@@ -431,12 +434,12 @@ const NavBar = () => {
               data-bs-parent="#sidebar-nav"
             >
               <li>
-                <a href="charts-apexcharts.html">
+              <a href="#" onClick={handleSalesRegister}>
                   <i className="bi bi-circle"></i>
                   <span>Sales Register</span>
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a href="charts-chartjs.html">
                   <i className="bi bi-circle"></i>
                   <span>Customer Register</span>
@@ -447,7 +450,7 @@ const NavBar = () => {
                   <i className="bi bi-circle"></i>
                   <span>Product Register</span>
                 </a>
-              </li>
+              </li> */}
             </ul>
           </li>
         </ul>

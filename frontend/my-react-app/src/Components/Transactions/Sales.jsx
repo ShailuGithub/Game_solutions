@@ -26,6 +26,7 @@ const Sales = () => {
   });
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [productForm, setProductForm] = useState({
+    id: 0,
     product: "",
     checkIn: "",
     checkOut: "",
@@ -151,8 +152,6 @@ const Sales = () => {
     }
   };
 
-  const handleSubmit = () => {};
-
   useEffect(() => {
     const userId = sessionStorage.getItem("UserId");
     if (!userId) {
@@ -198,7 +197,7 @@ const Sales = () => {
       e.preventDefault();
       console.log("this is productForm", productForm);
       console.log("Available products:", products);
-      const { product, checkIn, checkOut, quantity, Rate, amount } =
+      const { product, checkIn, checkOut, quantity, Rate, amount, id } =
         productForm;
 
       if (!product || !checkIn || !checkOut || !quantity || !Rate || !amount) {
@@ -214,7 +213,7 @@ const Sales = () => {
       setGridData((prev) => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id: id || crypto.randomUUID(),
           product: selectedProduct.Name,
           checkIn,
           checkOut,
@@ -223,7 +222,7 @@ const Sales = () => {
           amount,
         },
       ]);
-      console.log(gridData);
+      console.log("added grid data", gridData);
       setProductForm((prev) => ({
         ...prev,
         product: "",
@@ -232,14 +231,19 @@ const Sales = () => {
         quantity: "",
         Rate: "",
         amount: "",
+        id: "",
       }));
     }
   };
+  useEffect(() => {
+    console.log("Updated Grid Data in useeffect:", gridData);
+  }, [gridData]);
 
   const columnDefs = [
+    { headerName: "ID", field: "id", hide: true },
     { headerName: "Product", field: "product", width: 200 },
     { headerName: "Check In", field: "checkIn", width: 120 },
-    { headerName: "Check Out", field: "checkOut", width: 120 },
+    { headerName: "Check Out", field: "checkOut", width: 120, editable: true },
     { headerName: "Quantity", field: "quantity", width: 120 },
     { headerName: "Rate", field: "Rate", width: 120 },
     { headerName: "Amount", field: "amount", width: 120 },
@@ -318,6 +322,7 @@ const Sales = () => {
     const selectedProduct = products.find((p) => p.Name === rowData.product);
     console.log(rowData.Item_Id);
     setProductForm({
+      id: rowData.id,
       product: selectedProduct ? selectedProduct.Item_Id : "",
       checkIn: rowData.checkIn,
       checkOut: rowData.checkOut,
@@ -328,7 +333,7 @@ const Sales = () => {
     setGridData((prevData) =>
       prevData.filter((row) => row.Item_Id != rowData.Item_Id)
     );
-    // console.log("Updated Grid Data:", gridData);
+    console.log("Updated Grid Data:", gridData);
   };
   const handleAmountChange = (e) => {
     const { name, value } = e.target;
@@ -402,7 +407,7 @@ const Sales = () => {
       // Handle overnight case (e.g., Check-In: 23:30, Check-Out: 01:00)
       checkOutTime += 24 * 60;
     }
-    return checkOutTime - checkInTime; // Return difference in minutes
+    return checkOutTime - checkInTime;
   };
 
   return (
@@ -434,7 +439,7 @@ const Sales = () => {
           <div className="row">
             <div className="card">
               <div className="card-body">
-                <form className="row g-3 mt-3" onSubmit={handleSubmit}>
+                <form className="row g-3 mt-3">
                   <div className="row mb-3">
                     <div className="col-md-3">
                       <label htmlFor="inputState" className="form-label">
@@ -543,6 +548,7 @@ const Sales = () => {
 
                   <div className="row mb-3">
                     <div className="col-2">
+                      <input type="hidden" name="id" value={productForm.id} />
                       <label htmlFor="inputNanme4" className="form-label">
                         Product
                       </label>
@@ -633,7 +639,7 @@ const Sales = () => {
                       style={{ height: "300px", width: "100%" }}
                     >
                       <AgGridReact
-                        key={gridData.length}
+                        // key={gridData.length}
                         rowData={gridData}
                         columnDefs={columnDefs}
                         gridOptions={gridOptions}
@@ -709,6 +715,7 @@ const Sales = () => {
           </div>
         </section>
       </main>
+      <ToastContainer />
     </div>
   );
 };

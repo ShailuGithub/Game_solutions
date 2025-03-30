@@ -2,6 +2,7 @@ const pool = require("../connection.js").pool;
 
 const SalesInsert = async (req, res) => {
   const { customerId, email, contactNo, User_Id, products } = req.body;
+  console.log(req.body);
 
   if (!customerId || !products || products.length === 0) {
     return res.status(400).json({ error: "Invalid request data" });
@@ -29,13 +30,18 @@ const SalesInsert = async (req, res) => {
     );
     const mainId = mainRes.insertId;
     for (const product of products) {
+      const [itemResult] = await connection.execute(
+        `SELECT Item_Id FROM product_master WHERE Name = ?`,
+        [product.product]
+      );
+      itemId = itemResult[0].Item_Id;
       await connection.execute(
         `INSERT INTO tb_se_item_wait 
         (Main_Id, Item_Id, Quantity, Rate, Amount, CheckIn, CheckOut)
         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           mainId,
-          product.product,
+          itemId,
           product.quantity,
           product.Rate,
           product.amount,
@@ -98,7 +104,7 @@ const getSalesDetails = async (req, res) => {
 
 const SalesInsertMain = async (req, res) => {
   const { customerId, email, contactNo, User_Id, products, Amount } = req.body;
-
+  console.log(req.body);
   if (!customerId || !products || products.length === 0) {
     return res.status(400).json({ error: "Invalid request data" });
   }
@@ -137,14 +143,19 @@ const SalesInsertMain = async (req, res) => {
     );
     const mainId = mainRes.insertId;
     for (const product of products) {
-      console.log(product.Item_Id);
+      const [itemResult] = await connection.execute(
+        `SELECT Item_Id FROM product_master WHERE Name = ?`,
+        [product.product]
+      );
+      itemId = itemResult[0].Item_Id;
+      console.log(itemResult);
       await connection.execute(
         `INSERT INTO tb_se_item 
         (Main_Id, Item_Id, Quantity, Rate, Amount, CheckIn, CheckOut)
         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           mainId,
-          product.Item_Id,
+          itemId,
           product.quantity,
           product.Rate,
           product.amount,
@@ -179,24 +190,28 @@ const SalesInsertMain = async (req, res) => {
   }
 };
 
-const ReceiptInsert = async (req, res) => { 
-  
-  if (!req.body || !req.body.customerId || !req.body.Amount || !req.body.User_Id) {
+const ReceiptInsert = async (req, res) => {
+  if (
+    !req.body ||
+    !req.body.customerId ||
+    !req.body.Amount ||
+    !req.body.User_Id
+  ) {
     return res.status(400).json({
       Valid: false,
       message: "Please enter the mandatory fields",
     });
   }
-  console.log(req.body );
+  console.log(req.body);
   // Extract fields from request body
   const { customerId, Balance, Amount, User_Id } = req.body;
-  
+
   try {
     // Insert client data into database
     const [result] = await pool.query(
       `INSERT INTO tb_receipt (customer_Id, Balance, Amount, UserId , Entry_Date) 
        VALUES (?, ?, ?, ?, NOW())`,
-      [customerId, Balance, Amount.Amount,User_Id]
+      [customerId, Balance, Amount.Amount, User_Id]
     );
     if (result.affectedRows > 0) {
       console.log("Receipt insertion successful");
@@ -218,7 +233,7 @@ const ReceiptInsert = async (req, res) => {
       message: "Internal Server Error",
     });
   }
-}
+};
 
 const getReceiptDetails = async (req, res) => {
   console.log(req);
@@ -236,7 +251,7 @@ const getReceiptDetails = async (req, res) => {
   }
 };
 
-const GetSalesRegister = async (req, res) => {  
+const GetSalesRegister = async (req, res) => {
   console.log(req);
 
   const { id } = req.params; // Get selected transaction ID
@@ -244,7 +259,9 @@ const GetSalesRegister = async (req, res) => {
 
   // Validate if fromdate and todate are provided
   if (!fromdate || !todate) {
-    return res.status(400).json({ error: "Both fromdate and todate are required" });
+    return res
+      .status(400)
+      .json({ error: "Both fromdate and todate are required" });
   }
 
   try {
@@ -262,7 +279,7 @@ const GetSalesRegister = async (req, res) => {
     }
 
     const [rows] = await pool.execute(query, queryParams);
-    
+
     console.log(rows);
     res.json(rows); // Send the results as the response
   } catch (error) {
@@ -271,8 +288,6 @@ const GetSalesRegister = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
   SalesInsert,
   viewSales,
@@ -280,5 +295,5 @@ module.exports = {
   SalesInsertMain,
   ReceiptInsert,
   getReceiptDetails,
-  GetSalesRegister
+  GetSalesRegister,
 };

@@ -6,8 +6,9 @@ const {
   getSalesDetails,
   SalesInsertMain,
   ReceiptInsert,
-  getReceiptDetails, 
-  GetSalesRegister
+  getReceiptDetails,
+  GetSalesRegister,
+  viewMainSales,
 } = require("../controller/salescontroller.js");
 
 router.post("/saleinsert", SalesInsert);
@@ -17,5 +18,6 @@ router.post("/salesinsertMain", SalesInsertMain);
 router.post("/ReceiptInsert", ReceiptInsert);
 router.get("/getReceiptDetails/:id", getReceiptDetails);
 router.get("/GetSalesRegister/:id", GetSalesRegister);
+router.get("/getMainViewSales", viewMainSales);
 
 module.exports = router;

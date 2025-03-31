@@ -287,6 +287,18 @@ const GetSalesRegister = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+const viewMainSales = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT a.id,a.Tran_No,a.Tran_Date,b.Name,b.ContactNo,a.Net_Amount FROM node.tb_se_main a,node.client_master 
+      b where a.Customer_Id=b.Customer_Id;`
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching sales data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 module.exports = {
   SalesInsert,
@@ -296,4 +308,5 @@ module.exports = {
   ReceiptInsert,
   getReceiptDetails,
   GetSalesRegister,
+  viewMainSales,
 };

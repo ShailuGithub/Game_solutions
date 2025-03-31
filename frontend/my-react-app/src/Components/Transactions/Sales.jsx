@@ -12,6 +12,7 @@ import {
   createGrid,
 } from "ag-grid-community";
 import ViewSales from "./ViewSales";
+import ViewMainSales from "./ViewMainSales";
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -25,6 +26,7 @@ const Sales = () => {
     ContactNo: "",
   });
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [MainmodalIsOpen, setMainModalIsOpen] = useState(false);
   const [productForm, setProductForm] = useState({
     id: 0,
     product: "",
@@ -430,9 +432,20 @@ const Sales = () => {
             </nav>
           </div>
           <div className="col-md-9 d-flex justify-content-end">
-            <button type="reset" className="btn btn-outline-primary">
+            <button
+              type="reset"
+              className="btn btn-outline-primary"
+              onClick={() => setMainModalIsOpen(true)}
+            >
               Sales List
             </button>
+            {MainmodalIsOpen && (
+              <ViewMainSales
+                isOpen={MainmodalIsOpen}
+                onClose={() => setMainModalIsOpen(false)}
+                // onSelectTransaction={handleTransactionSelect}
+              />
+            )}
           </div>
         </div>
         <section className="section">

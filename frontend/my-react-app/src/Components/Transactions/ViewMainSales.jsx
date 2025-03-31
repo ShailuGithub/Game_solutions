@@ -2,15 +2,13 @@ import React, { useEffect, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import Modal from "react-modal";
 import axiosinstance from "../../utils/axiosinstance";
-// Modal.setAppElement("#root");
-
-const ViewSales = ({ isOpen, onClose, onSelectTransaction }) => {
+const ViewMainSales = ({ isOpen, onClose }) => {
   const [rowData, setRowData] = useState([]);
 
   useEffect(() => {
     if (isOpen) {
       axiosinstance
-        .get("sales/getViewSales")
+        .get("sales/getMainViewSales")
         .then((response) => {
           console.log("Fetched Data:", response.data);
           setRowData(response.data);
@@ -20,9 +18,8 @@ const ViewSales = ({ isOpen, onClose, onSelectTransaction }) => {
         });
     }
   }, [isOpen]);
-
   const onRowClicked = (event) => {
-    onSelectTransaction(event.data.id);
+    // onSelectTransaction(event.data.id);
     onClose();
   };
   const columnDefs = [
@@ -72,4 +69,4 @@ const ViewSales = ({ isOpen, onClose, onSelectTransaction }) => {
   );
 };
 
-export default ViewSales;
+export default ViewMainSales;

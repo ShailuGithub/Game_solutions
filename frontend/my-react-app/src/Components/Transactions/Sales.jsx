@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axiosinstance from "../../utils/axiosinstance";
 import { ToastContainer, toast } from "react-toastify";
 import NavBar from "../NavBar";
@@ -20,6 +20,26 @@ ModuleRegistry.registerModules([
   ValidationModule /* Development Only */,
 ]);
 const Sales = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const handleScroll = () => {
+    if (window.scrollY > 100) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  };
+  useEffect(() => {
+    // Add the scroll event listener on mount
+    window.addEventListener("scroll", handleScroll);
+
+    // Call the handleScroll to check the initial scroll position
+    handleScroll();
+
+    // Clean up the event listener on unmount
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     Email: "",
@@ -46,6 +66,9 @@ const Sales = () => {
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [gridData, setGridData] = useState([]);
   const [products, setProducts] = useState([]);
+  const rateInputRef = useRef(null);
+  const amountInputRef = useRef(null);
+  const [selectedId, setSelectedId] = useState(null);
   const fetchClients = async () => {
     try {
       const response = await axiosinstance.get("client");
@@ -133,6 +156,7 @@ const Sales = () => {
         product: itemId,
         Rate: selectedProduct.Rate,
         amount: selectedProduct.amount,
+        quantity: 1,
       }));
       console.log(productForm);
     }
@@ -162,6 +186,7 @@ const Sales = () => {
     fetchClients();
     fetchProduct();
   }, []);
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -169,40 +194,43 @@ const Sales = () => {
     }));
   };
 
-  // const handleQuantityAndRateChange = (e) => {
-  //   const { name, value } = e.target;
+  const handleQuantityAndRateChange = (e) => {
+    const { name, value } = e.target;
 
-  //   setProductForm((prev) => {
-  //     // Convert values to numbers htmlFor calculation
-  //     const quantity =
-  //       name === "quantity" ? Number(value) : Number(prev.quantity);
-  //     const rate = name === "Rate" ? Number(value) : Number(prev.Rate);
+    setProductForm((prev) => {
+      // Convert values to numbers htmlFor calculation
+      const quantity =
+        name === "quantity" ? Number(value) : Number(prev.quantity);
+      const rate = name === "Rate" ? Number(value) : Number(prev.Rate);
 
-  //     const updatedForm = {
-  //       ...prev,
-  //       [name]: value,
-  //       amount: !isNaN(quantity) && !isNaN(rate) ? quantity * rate : 0, // Calculate amount
-  //     };
+      const updatedForm = {
+        ...prev,
+        [name]: value,
+        amount: !isNaN(quantity) && !isNaN(rate) ? quantity * rate : 0, // Calculate amount
+      };
 
-  //     return updatedForm;
-  //   });
-  // };
+      return updatedForm;
+    });
+  };
+
   useEffect(() => {
-    setProductForm((prev) => ({
-      ...prev,
-      amount: prev.quantity * prev.Rate || 0, // Ensures no NaN issues
-    }));
+    if (productForm.quantity && productForm.Rate) {
+      setProductForm((prev) => ({
+        ...prev,
+        amount: Number(prev.quantity) * Number(prev.Rate), // Ensures no NaN issues
+      }));
+    }
   }, [productForm.quantity, productForm.Rate]);
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && e.target.name === "amount") {
       e.preventDefault();
       console.log("this is productForm", productForm);
       console.log("Available products:", products);
       const { product, checkIn, checkOut, quantity, Rate, amount, id } =
         productForm;
 
-      if (!product || !checkIn || !checkOut || !quantity || !Rate || !amount) {
+      if (!product) {
         alert("Please fill all product fields");
         return;
       }
@@ -219,7 +247,7 @@ const Sales = () => {
           product: selectedProduct.Name,
           checkIn,
           checkOut,
-          quantity,
+          quantity: Number(quantity),
           Rate,
           amount,
         },
@@ -237,13 +265,20 @@ const Sales = () => {
       }));
     }
   };
+
   useEffect(() => {
     console.log("Updated Grid Data in useeffect:", gridData);
+    const total = gridData.reduce((acc, item) => acc + (item.amount || 0), 0);
+    setAmountForm((prev) => ({
+      ...prev,
+      NetAmount: total,
+    }));
+    console.log(total);
   }, [gridData]);
 
   const columnDefs = [
     { headerName: "ID", field: "id", hide: true },
-    { headerName: "Product", field: "product", width: 200 },
+    { headerName: "Product", field: "product", width: 240 },
     { headerName: "Check In", field: "checkIn", width: 120 },
     { headerName: "Check Out", field: "checkOut", width: 120, editable: true },
     { headerName: "Quantity", field: "quantity", width: 120 },
@@ -280,12 +315,20 @@ const Sales = () => {
       email: formData.Email,
       contactNo: formData.ContactNo,
       products: gridData, // Sending the gridData array as products
+      selectedId: selectedId,
     };
 
     console.log("Payload:", payload);
 
     try {
-      const response = await axiosinstance.post("sales/saleinsert", payload);
+      let response;
+      if (selectedId !== null) {
+        response = await axiosinstance.post("sales/SalesUpdateWait", payload);
+      } else {
+        response = await axiosinstance.post("sales/SalesInsertWait", payload);
+      }
+
+      //const response = await axiosinstance.post("sales/saleinsert", payload);
 
       if (response.status === 200 && response.data.Valid) {
         toast.success("Sales entry created successfully!");
@@ -302,6 +345,7 @@ const Sales = () => {
     }
   };
   const handleTransactionSelect = (id) => {
+    setSelectedId(id);
     axiosinstance
       .get(`sales/getSalesDetails/${id}`)
       .then((response) => {
@@ -319,10 +363,11 @@ const Sales = () => {
         console.error("Error fetching sales details:", error);
       });
   };
+
   const handleRowClick = (event) => {
     const rowData = event.data;
     const selectedProduct = products.find((p) => p.Name === rowData.product);
-    console.log(rowData.Item_Id);
+
     setProductForm({
       id: rowData.id,
       product: selectedProduct ? selectedProduct.Item_Id : "",
@@ -332,17 +377,46 @@ const Sales = () => {
       Rate: rowData.Rate,
       amount: rowData.amount,
     });
-    setGridData((prevData) =>
-      prevData.filter((row) => row.Item_Id != rowData.Item_Id)
-    );
-    console.log("Updated Grid Data:", gridData);
+
+    setGridData((prevData) => {
+      const updatedData = prevData.filter(
+        (row) => row.product !== rowData.product
+      );
+      return updatedData;
+    });
   };
+
   const handleAmountChange = (e) => {
     const { name, value } = e.target;
     setAmountForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value ? Number(value) : 0,
     }));
+  };
+  const handleKeyDownQuantity = (e) => {
+    // If Enter key is pressed, prevent form submission
+    if (e.key === "Enter" && e.target.name === "quantity") {
+      e.preventDefault(); // Prevent form submission on Enter
+      const quantity = parseFloat(productForm.quantity);
+      // if (quantity > 0) {
+      if (rateInputRef.current) {
+        rateInputRef.current.focus();
+      }
+      // } else {
+      //   toast.error("Quantity must be greater than 0");
+      // }
+    }
+    if (e.key === "Enter" && e.target.name === "Rate") {
+      e.preventDefault(); // Prevent form submission on Enter
+      const rate = parseFloat(productForm.Rate);
+      if (rate > 0) {
+        if (amountInputRef.current) {
+          amountInputRef.current.focus();
+        }
+      } else {
+        toast.error("Rate must be greater than 0");
+      }
+    }
   };
   const handleMainSubmit = async (e) => {
     e.preventDefault(); // Prevent form default submission
@@ -350,6 +424,23 @@ const Sales = () => {
     // Validate that required fields are filled
     if (!selectedCustomer || !gridData.length) {
       toast.error("Please select a customer and add at least one product!");
+      return;
+    }
+    const { upi, cash, credit, NetAmount } = AmountForm;
+    if (upi <= 0 && cash <= 0 && credit <= 0) {
+      toast.error(
+        "Please enter at least one of the payment fields: UPI, Cash, or Credit."
+      );
+      return;
+    }
+    console.log(Number(upi), "this is upi + cash + credit");
+    console.log(Number(cash));
+    console.log(Number(credit));
+    console.log(Number(NetAmount), "netamt");
+    if (upi + cash + credit !== NetAmount) {
+      toast.error(
+        "The sum of UPI, Cash, and Credit must equal the Net Amount."
+      );
       return;
     }
 
@@ -360,6 +451,7 @@ const Sales = () => {
       contactNo: formData.ContactNo,
       products: gridData, // Sending the gridData array as products
       Amount: AmountForm,
+      selectedId: selectedId,
     };
 
     console.log("Payload:", payload);
@@ -372,11 +464,7 @@ const Sales = () => {
 
       if (response.status === 200 && response.data.Valid) {
         toast.success("Sales entry created successfully!");
-        // Clear form data and grid after successful submission
-        setFormData({ Email: "", ContactNo: "" });
-        setGridData([]);
-        setSelectedCustomer("");
-        setAmountForm([]);
+        ResetAll();
       } else {
         toast.error(response.data.Message || "Failed to create sales entry");
       }
@@ -411,6 +499,29 @@ const Sales = () => {
     }
     return checkOutTime - checkInTime;
   };
+  const ResetAll = () => {
+    setProductForm({
+      id: 0,
+      product: "",
+      checkIn: "",
+      checkOut: "",
+      quantity: 0,
+      Rate: 0,
+      amount: 0,
+    });
+    setAmountForm({
+      upi: 0,
+      cash: 0,
+      credit: 0,
+      NetAmount: 0,
+    });
+    setFormData({
+      Email: "",
+      ContactNo: "",
+    });
+    setGridData([]);
+    setSelectedCustomer("");
+  };
 
   return (
     <div className="container">
@@ -434,7 +545,7 @@ const Sales = () => {
           <div className="col-md-9 d-flex justify-content-end">
             <button
               type="reset"
-              className="btn btn-outline-primary"
+              className="btn btn-outline-dark"
               onClick={() => setMainModalIsOpen(true)}
             >
               Sales List
@@ -613,11 +724,12 @@ const Sales = () => {
                         Quantity
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         className="form-control"
                         name="quantity"
                         value={productForm.quantity}
-                        // onChange={handleQuantityAndRateChange}
+                        onChange={handleQuantityAndRateChange}
+                        onKeyDown={handleKeyDownQuantity}
                       />
                     </div>
                     <div className="col-2">
@@ -625,10 +737,12 @@ const Sales = () => {
                         Rate
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         className="form-control"
                         name="Rate"
                         value={productForm.Rate}
+                        ref={rateInputRef}
+                        onKeyDown={handleKeyDownQuantity}
                         // onChange={handleQuantityAndRateChange}
                       />
                     </div>
@@ -637,11 +751,12 @@ const Sales = () => {
                         Amount
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         className="form-control"
                         name="amount"
                         value={productForm.amount}
                         onChange={handleProductChange}
+                        ref={amountInputRef}
                         onKeyDown={handleKeyDown}
                       />
                     </div>
@@ -661,11 +776,12 @@ const Sales = () => {
                     </div>
                   </div>
                   <div className="col-2">
-                    <label htmlFor="inputNanme4" className="form-label">
+                    {/* <label htmlFor="inputNanme4" className="form-label">
                       Cash
-                    </label>
+                    </label> */}
+                    <h2 class="card-title">Cash</h2>
                     <input
-                      type="number"
+                      type="text"
                       className="form-control"
                       name="cash"
                       value={AmountForm.cash}
@@ -673,11 +789,9 @@ const Sales = () => {
                     />
                   </div>
                   <div className="col-2">
-                    <label htmlFor="inputNanme4" className="form-label">
-                      UPI
-                    </label>
+                    <h2 class="card-title">UPI</h2>
                     <input
-                      type="number"
+                      type="text"
                       className="form-control"
                       name="upi"
                       value={AmountForm.upi}
@@ -685,28 +799,35 @@ const Sales = () => {
                     />
                   </div>
                   <div className="col-2">
-                    <label htmlFor="inputNanme4" className="form-label">
-                      Credit
-                    </label>
+                    <h2 class="card-title">Credit</h2>
                     <input
-                      type="number"
+                      type="text"
                       className="form-control"
                       name="credit"
                       value={AmountForm.credit}
                       onChange={handleAmountChange}
                     />
                   </div>
-                  <div className="col-2">
-                    <label htmlFor="inputNanme4" className="form-label">
-                      Net Amount
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="NetAmount"
-                      value={AmountForm.NetAmount}
-                      onChange={handleAmountChange}
-                    />
+                  <div className="col-6" style={{ textAlign: "right" }}>
+                    <h4 class="card-title">Net Amount</h4>
+                    <div class="ps-3">
+                      <h6
+                        style={{
+                          fontSize: "28px",
+                          color: "#012970",
+                          fontWeight: 700,
+                          margin: 0,
+                          padding: 0,
+                        }}
+                      >
+                        ₹{AmountForm.NetAmount}
+                      </h6>
+                    </div>
+                    {/* <div style={{ textAlign: "right" }}>
+                      <h4>
+                        <span id="lblNetAmount">{AmountForm.NetAmount}</span>
+                      </h4>
+                    </div> */}
                   </div>
 
                   <div style={{ textAlign: "right" }}>
@@ -718,7 +839,10 @@ const Sales = () => {
                     >
                       Submit
                     </button>
-                    <button type="reset" className="btn btn-outline-secondary">
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={ResetAll}
+                    >
                       Reset
                     </button>
                   </div>
@@ -729,6 +853,18 @@ const Sales = () => {
         </section>
       </main>
       <ToastContainer />
+      <a
+        href="#"
+        className={`back-to-top d-flex align-items-center justify-content-center ${
+          isVisible ? "active" : ""
+        }`}
+        onClick={(e) => {
+          e.preventDefault(); // Prevent default anchor behavior
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      >
+        <i className="bi bi-arrow-up-short"></i>
+      </a>
     </div>
   );
 };

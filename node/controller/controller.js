@@ -181,4 +181,32 @@ const resetpassword = async (req, res) => {
   }
 };
 
-module.exports = { Login, getcode, Register, resetpassword };
+const SendMailSalesRegister = async (req, res) => {
+  if (!req.body) {
+    return res.json({ Valid: false, message: "Email is required" });
+  }
+
+  const { to, subject, body } = req.body;
+
+  try {
+    console.log("Verification successful");
+    const sentmail = await sendMailer(to, subject, body);
+    if (sentmail.success) {
+      return res.json({
+        Valid: true,
+        message: "Verification code has been sent to your registered mail ID.",
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res.json({ Valid: false, message: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  Login,
+  getcode,
+  Register,
+  resetpassword,
+  SendMailSalesRegister,
+};

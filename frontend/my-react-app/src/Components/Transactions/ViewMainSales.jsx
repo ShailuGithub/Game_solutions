@@ -23,50 +23,52 @@ const ViewMainSales = ({ isOpen, onClose }) => {
     onClose();
   };
   const columnDefs = [
-    { headerName: "ID", field: "id", width: 80 },
-    { headerName: "Transaction No", field: "Tran_No", width: 200 },
-    { headerName: "Transaction Date", field: "Tran_Date", width: 200 },
+    { headerName: "ID", field: "id", width: 70 }, 
+    { headerName: "Tran No", field: "Tran_No", width: 90 },
+    {
+      headerName: "Tran Date", field: "Tran_Date", width: 110, valueFormatter: function (params) {
+        const date = new Date(params.value);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+      }
+    },
     { headerName: "Customer Name", field: "Name", width: 200 },
-    { headerName: "Contact No", field: "ContactNo", width: 150 },
+    { headerName: "Contact No", field: "ContactNo", width: 120 },
     { headerName: "Net Amount", field: "Net_Amount", width: 150 },
   ];
   return (
-    <Modal
-      isOpen={isOpen}
-      onRequestClose={onClose}
-      style={{
-        overlay: {
-          backgroundColor: "rgba(0, 0, 0, 0.6)", // Dark overlay to reduce transparency
-          zIndex: 1000,
-        },
-        content: {
-          backgroundColor: "#fff",
-          width: "80%",
-          height: "500px",
-          margin: "auto",
-          borderRadius: "10px",
-          padding: "20px",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-          zIndex: 1001,
-        },
-      }}
-    >
-      <h2>Sales Details</h2>
-      <button onClick={onClose}>Close</button>
-
-      <div
-        className="ag-theme-alpine"
-        style={{ height: "400px", width: "100%" }}
-      >
-        <AgGridReact
-          rowData={rowData}
-          columnDefs={columnDefs}
-          pagination={true}
-          onRowClicked={onRowClicked}
-        />
+      <div> 
+        {isOpen && (
+          <div className="modal fade show" id="largeModal" tabIndex="-1" style={{ display: 'block' }} aria-labelledby="largeModalLabel">
+            <div className="modal-dialog modal-lg">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title" id="largeModalLabel">Sales List </h5>
+                  <button type="button" className="btn-close" onClick={onClose} aria-label="Close"></button>
+                </div>
+                <div className="modal-body">
+                  <div
+                    className="ag-theme-alpine"
+                    style={{ height: "400px", width: "100%" }}
+                  >
+                    <AgGridReact
+                      rowData={rowData}
+                      columnDefs={columnDefs}
+                      pagination={true}
+                      onRowDoubleClicked={onRowClicked}
+                    />
+                  </div>
+                </div>
+                {/* <div className="modal-footer"> 
+                </div> */}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </Modal>
-  );
+    );
 };
 
 export default ViewMainSales;

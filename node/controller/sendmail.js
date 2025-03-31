@@ -17,7 +17,7 @@ const sendMailer = async (email, subject, text) => {
       from: "karthikbhatt13@gmail.com",
       to: email,
       subject: subject,
-      text: text,
+      html: text,
     };
     console.log(email);
     const info = await transport.sendMail(mailOptions);

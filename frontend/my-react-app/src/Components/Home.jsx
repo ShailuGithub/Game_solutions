@@ -2,9 +2,13 @@ import React, { useState, useEffect } from "react";
 import ApexCharts from "react-apexcharts";
 import ReactECharts from "echarts-for-react";
 import NavBar from "./NavBar";
+import axiosinstance from "../utils/axiosinstance";
 
 const Home = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [SalesTodayCount, setSalesTodayCount] = useState(null);
+  const [SalesTodayLiveCount, setSalesTodayLiveCount] = useState(null);
+  const [SalesTodayCompletedCount, setSalesTodayCompletedCount] = useState(null);
 
   const handleScroll = () => {
     if (window.scrollY > 100) {
@@ -15,6 +19,9 @@ const Home = () => {
   };
 
   useEffect(() => {
+    GetSalesTodayCount();
+    GetSalesTodayLiveCount();
+    GetSalesTodayCompletedCount();
     // Add the scroll event listener on mount
     window.addEventListener("scroll", handleScroll);
 
@@ -26,6 +33,41 @@ const Home = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  const GetSalesTodayCount = async () => {
+    try {
+      const response = await axiosinstance.get("sales/GetSalesTodayCount");
+      if (response.status === 200 && response.data.Valid) {
+        setSalesTodayCount(response.data.SalesTodayCount)
+        console.log(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching Sales Today Count:", error);
+    }
+  };
+  const GetSalesTodayLiveCount = async () => {
+    try {
+      const response = await axiosinstance.get("sales/GetSalesTodayLiveCount");
+      if (response.status === 200 && response.data.Valid) {
+        setSalesTodayLiveCount(response.data.SalesTodayLiveCount)
+        console.log(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching Sales Today Count:", error);
+    }
+  };
+
+  const GetSalesTodayCompletedCount = async () => {
+    try {
+      const response = await axiosinstance.get("sales/GetSalesTodayCompletedCount");
+      if (response.status === 200 && response.data.Valid) {
+        setSalesTodayCompletedCount(response.data.SalesTodayCompletedCount)
+        console.log(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching Sales Today Count:", error);
+    }
+  };
 
   const chartOptions = {
     series: [
@@ -166,7 +208,7 @@ const Home = () => {
                           <i class="ri-numbers-line"></i>
                         </div>
                         <div class="ps-3">
-                          <h6>145</h6>
+                          <h6>{SalesTodayCount !== null ? SalesTodayCount : "Loading..."}</h6>
                           {/* <span class="text-success small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">increase</span> */}
                         </div>
                       </div>
@@ -199,7 +241,7 @@ const Home = () => {
                           <i class="ri-gamepad-line"></i>
                         </div>
                         <div class="ps-3">
-                          <h6>264</h6>
+                        <h6>{SalesTodayLiveCount !== null ? SalesTodayLiveCount : "Loading..."}</h6>
                           {/* <span class="text-success small pt-1 fw-bold">8%</span> <span class="text-muted small pt-2 ps-1">increase</span> */}
                         </div>
                       </div>
@@ -224,7 +266,7 @@ const Home = () => {
 
                     <div class="card-body">
                       <h5 class="card-title">
-                        Game <span>| PENDING</span>
+                        Game <span>| COMPLETED</span>
                       </h5>
 
                       <div class="d-flex align-items-center">
@@ -232,7 +274,7 @@ const Home = () => {
                           <i class="ri-gamepad-line"></i>
                         </div>
                         <div class="ps-3">
-                          <h6>1244</h6>
+                        <h6>{SalesTodayCompletedCount !== null ? SalesTodayCompletedCount : "Loading..."}</h6>
                           {/* <span class="text-danger small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">decrease</span> */}
                         </div>
                       </div>
@@ -397,9 +439,8 @@ const Home = () => {
       </footer>
       <a
         href="#"
-        className={`back-to-top d-flex align-items-center justify-content-center ${
-          isVisible ? "active" : ""
-        }`}
+        className={`back-to-top d-flex align-items-center justify-content-center ${isVisible ? "active" : ""
+          }`}
         onClick={(e) => {
           e.preventDefault(); // Prevent default anchor behavior
           window.scrollTo({ top: 0, behavior: "smooth" });

@@ -6,5 +6,6 @@ router.post("/Login", controller.Login);
 router.post("/Register", controller.Register);
 router.post("/GetCode", controller.getcode);
 router.post("/reset-password", controller.resetpassword);
+router.post("/SendMailSalesRegister", controller.SendMailSalesRegister);
 
 module.exports = router;

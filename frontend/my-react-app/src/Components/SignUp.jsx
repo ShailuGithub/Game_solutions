@@ -168,8 +168,8 @@ const SignIn = () => {
             <div className="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
               <div className="d-flex justify-content-center py-4">
                 <a href="index.html" className="logo d-flex align-items-center w-auto">
-                  {/* <img src="/img/logo.png" alt="Logo" /> */}
-                  <span className="d-none d-lg-block">ABC</span>
+                  <img src="/img/logo.png" alt="Logo" />
+                  <span className="d-none d-lg-block">Cheat Codes</span>
                 </a>
               </div>
 
@@ -274,8 +274,8 @@ const SignIn = () => {
             <div className="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
               <div className="d-flex justify-content-center py-4">
                 <a href="index.html" className="logo d-flex align-items-center w-auto">
-                  {/* <img src="/img/logo.png" alt="Logo" /> */}
-                  <span className="d-none d-lg-block">ABC</span>
+                  <img src="/img/logo.png" alt="Logo" />
+                  <span className="d-none d-lg-block">Cheat Codes</span>
                 </a>
               </div>
 

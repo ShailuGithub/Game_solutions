@@ -8,13 +8,13 @@ const sendMailer = async (email, subject, text) => {
       port: 587,
       secure: false,
       auth: {
-        user: "karthikbhatt13@gmail.com",
+        user: "cheatcodes1115@gmail.com",
         pass: process.env.APP_PASS_KEY,
       },
     });
 
     const mailOptions = {
-      from: "karthikbhatt13@gmail.com",
+      from: "cheatcodes1115@gmail.com",
       to: email,
       subject: subject,
       html: text,

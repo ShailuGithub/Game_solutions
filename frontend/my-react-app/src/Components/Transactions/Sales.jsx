@@ -231,7 +231,7 @@ const Sales = () => {
         productForm;
 
       if (!product) {
-        alert("Please fill all product fields");
+        toast.warning("Please fill all product fields");
         return;
       }
       const selectedProduct = products.find(
@@ -416,6 +416,18 @@ const Sales = () => {
       } else {
         toast.error("Rate must be greater than 0");
       }
+    }
+    if (e.key === "Enter" && e.target.name === "cash") {
+      e.preventDefault();  
+      
+    }
+    if (e.key === "Enter" && e.target.name === "upi") {
+      e.preventDefault();  
+      
+    }
+    if (e.key === "Enter" && e.target.name === "credit") {
+      e.preventDefault();  
+      
     }
   };
   const handleMainSubmit = async (e) => {
@@ -787,6 +799,7 @@ const Sales = () => {
                       name="cash"
                       value={AmountForm.cash}
                       onChange={handleAmountChange}
+                      onKeyDown={handleKeyDownQuantity}
                     />
                   </div>
                   <div className="col-2">
@@ -797,6 +810,7 @@ const Sales = () => {
                       name="upi"
                       value={AmountForm.upi}
                       onChange={handleAmountChange}
+                      onKeyDown={handleKeyDownQuantity}
                     />
                   </div>
                   <div className="col-2">
@@ -807,6 +821,7 @@ const Sales = () => {
                       name="credit"
                       value={AmountForm.credit}
                       onChange={handleAmountChange}
+                      onKeyDown={handleKeyDownQuantity}
                     />
                   </div>
                   <div className="col-6" style={{ textAlign: "right" }}>

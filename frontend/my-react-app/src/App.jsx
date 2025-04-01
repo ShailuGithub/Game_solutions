@@ -7,6 +7,7 @@ import Sales from "./Components/Transactions/Sales";
 import Dashboard from "./Components/Dashboard";
 import Receipt from "./Components/Transactions/Receipt";
 import SalesRegister from "./Components/Reports/SalesRegister";
+import ViewMainSales from "./Components/Transactions/ViewMainSales";
 function App() {
   return (
     <BrowserRouter>
@@ -19,6 +20,7 @@ function App() {
         <Route path="/Sales" element={<Sales />} />
         <Route path="/Receipt" element={<Receipt />} />
         <Route path="/SalesRegister" element={<SalesRegister />} />
+        <Route path="/ViewMainSales" element={<ViewMainSales />} />
       </Routes>
     </BrowserRouter>
   );

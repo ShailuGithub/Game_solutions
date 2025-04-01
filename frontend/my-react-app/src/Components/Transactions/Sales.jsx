@@ -546,17 +546,18 @@ const Sales = () => {
             <button
               type="reset"
               className="btn btn-outline-dark"
-              onClick={() => setMainModalIsOpen(true)}
+              // onClick={() => setMainModalIsOpen(true)}
+              onClick={() => navigate("/ViewMainSales")}
             >
               Sales List
             </button>
-            {MainmodalIsOpen && (
+            {/* {MainmodalIsOpen && (
               <ViewMainSales
                 isOpen={MainmodalIsOpen}
                 onClose={() => setMainModalIsOpen(false)}
                 // onSelectTransaction={handleTransactionSelect}
               />
-            )}
+            )} */}
           </div>
         </div>
         <section className="section">
